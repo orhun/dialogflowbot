@@ -22,6 +22,9 @@ public class MainActivity extends Activity {
 
     private SessionsClient sessionsClient;
     private SessionName session;
+    private interface ResponseInterface {
+        void onResponse(DetectIntentResponse response);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,18 +57,17 @@ public class MainActivity extends Activity {
     }
 
     private static class RequestTask extends AsyncTask<Void, Void, DetectIntentResponse> {
-
+        private ResponseInterface responseInterface;
         private SessionName session;
         private SessionsClient sessionsClient;
         private QueryInput queryInput;
-
-        private RequestTask(SessionName session,
+        private RequestTask(ResponseInterface responseInterface, SessionName session,
                           SessionsClient sessionsClient, QueryInput queryInput) {
+            this.responseInterface = responseInterface;
             this.session = session;
             this.sessionsClient = sessionsClient;
             this.queryInput = queryInput;
         }
-
         @Override
         protected DetectIntentResponse doInBackground(Void... voids) {
             try {
@@ -80,10 +82,9 @@ public class MainActivity extends Activity {
             }
             return null;
         }
-
         @Override
         protected void onPostExecute(DetectIntentResponse response) {
-
+            responseInterface.onResponse(response);
         }
     }
 
