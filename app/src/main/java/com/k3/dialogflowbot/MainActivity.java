@@ -14,6 +14,7 @@ import com.google.cloud.dialogflow.v2beta1.QueryInput;
 import com.google.cloud.dialogflow.v2beta1.SessionName;
 import com.google.cloud.dialogflow.v2beta1.SessionsClient;
 import com.google.cloud.dialogflow.v2beta1.SessionsSettings;
+import com.google.cloud.dialogflow.v2beta1.TextInput;
 
 import java.io.InputStream;
 import java.util.UUID;
@@ -22,6 +23,8 @@ public class MainActivity extends Activity {
 
     private SessionsClient sessionsClient;
     private SessionName session;
+    private QueryInput queryInput;
+    private String languageCode = "tr";
     private interface ResponseInterface {
         void onResponse(DetectIntentResponse response);
     }
@@ -30,12 +33,20 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (initDialogflow()) {
-
-        } else {
+        if (!initDialogflow()) {
             Toast.makeText(this, "Failed to initialize Dialogflow.",
                     Toast.LENGTH_SHORT).show();
+            finish();
         }
+        String testQuery = "test";
+        queryInput = QueryInput.newBuilder().setText(TextInput.newBuilder().setText(testQuery)
+                .setLanguageCode(languageCode)).build();
+        new RequestTask(session, sessionsClient, queryInput, new ResponseInterface() {
+            @Override
+            public void onResponse(DetectIntentResponse response) {
+                //
+            }
+        }).execute();
     }
 
     private boolean initDialogflow() {
@@ -57,16 +68,16 @@ public class MainActivity extends Activity {
     }
 
     private static class RequestTask extends AsyncTask<Void, Void, DetectIntentResponse> {
-        private ResponseInterface responseInterface;
         private SessionName session;
         private SessionsClient sessionsClient;
         private QueryInput queryInput;
-        private RequestTask(ResponseInterface responseInterface, SessionName session,
-                          SessionsClient sessionsClient, QueryInput queryInput) {
-            this.responseInterface = responseInterface;
+        private ResponseInterface responseInterface;
+        private RequestTask(SessionName session, SessionsClient sessionsClient,
+                            QueryInput queryInput, ResponseInterface responseInterface) {
             this.session = session;
             this.sessionsClient = sessionsClient;
             this.queryInput = queryInput;
+            this.responseInterface = responseInterface;
         }
         @Override
         protected DetectIntentResponse doInBackground(Void... voids) {
