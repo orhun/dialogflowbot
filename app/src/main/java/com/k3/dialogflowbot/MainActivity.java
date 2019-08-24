@@ -44,7 +44,8 @@ public class MainActivity extends Activity {
         new RequestTask(session, sessionsClient, queryInput, new ResponseInterface() {
             @Override
             public void onResponse(DetectIntentResponse response) {
-                //
+                String fulfillmentText = response.getQueryResult().getFulfillmentText();
+                Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
             }
         }).execute();
     }
