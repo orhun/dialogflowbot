@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Dialogflowbot</string>
+    <string name="dialogflow_init_error">Failed to initialize Dialogflow.</string>
+    <string name="texttospeech_init_error">Failed to initialize TextToSpeech.</string>
 </resources>

@@ -1,8 +1,10 @@
 package com.k3.dialogflowbot;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -17,10 +19,12 @@ import com.google.cloud.dialogflow.v2beta1.SessionsSettings;
 import com.google.cloud.dialogflow.v2beta1.TextInput;
 
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
 
+    private TextToSpeech textToSpeech;
     private SessionsClient sessionsClient;
     private SessionName session;
     private QueryInput queryInput;
@@ -34,7 +38,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (!initDialogflow()) {
-            Toast.makeText(this, "Failed to initialize Dialogflow.",
+            Toast.makeText(this, getString(R.string.dialogflow_init_error),
                     Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -45,6 +49,7 @@ public class MainActivity extends Activity {
             @Override
             public void onResponse(DetectIntentResponse response) {
                 String fulfillmentText = response.getQueryResult().getFulfillmentText();
+                speakText(getApplicationContext(), languageCode, fulfillmentText);
                 Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
             }
         }).execute();
@@ -100,4 +105,22 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void speakText(final Context context, final String languageCode, final String text){
+        textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    int setLanguage= textToSpeech.setLanguage(new Locale(languageCode,
+                            languageCode.toUpperCase()));
+                    if (setLanguage == TextToSpeech.LANG_MISSING_DATA ||
+                            setLanguage == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Toast.makeText(context, context.getString(R.string.texttospeech_init_error),
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+                    }
+                }
+            }
+        });
+    }
 }
