@@ -1,9 +1,9 @@
 package com.k3.dialogflowbot;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -23,6 +23,7 @@ import com.google.cloud.dialogflow.v2beta1.SessionsSettings;
 import com.google.cloud.dialogflow.v2beta1.TextInput;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -52,16 +53,12 @@ public class MainActivity extends Activity {
                             getString(R.string.connection_error),
                             Toast.LENGTH_SHORT).show();
                     finish();
-                } else if (!initDialogflow()) {
-                        Toast.makeText(MainActivity.this,
-                                getString(R.string.dialogflow_init_error),
-                                Toast.LENGTH_SHORT).show();
-                        finish();
                 }
             }
         }).execute();
-        initTTS();
         initSpeechRecognizer();
+        initTTS();
+        initDialogflow();
         speechRecognizer.startListening(recognizerIntent);
     }
 
@@ -78,13 +75,21 @@ public class MainActivity extends Activity {
     }
 
     private void initSpeechRecognizer() {
-        resetSpeechRecognizer();
-        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,  languageCode);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        try {
+            resetSpeechRecognizer();
+            recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode);
+            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode);
+            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        }catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.speechrecognition_init_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     public void initTTS(){
@@ -104,22 +109,38 @@ public class MainActivity extends Activity {
                     }
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
-                        public void onStart(String s) {
-                            if(speechRecognizer != null)
-                                speechRecognizer.stopListening();
-                        }
+                        public void onStart(String s) { }
 
                         @Override
                         public void onDone(String s) {
-                            if (speechRecognizer != null)
-                                speechRecognizer.startListening(recognizerIntent);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (speechRecognizer != null) {
+                                                speechRecognizer.startListening(recognizerIntent);
+                                            } else {
+                                                resetSpeechRecognizer();
+                                                speechRecognizer.startListening(recognizerIntent);
+                                            }
+                                        }
+                                    }, 500);
+                                }
+                            });
                         }
 
                         @Override
-                        public void onError(String s) {
-                            txvResult.setText(s);
-                            resetSpeechRecognizer();
-                            speechRecognizer.startListening(recognizerIntent);
+                        public void onError(final String s) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    txvResult.setText(s);
+                                    resetSpeechRecognizer();
+                                    speechRecognizer.startListening(recognizerIntent);
+                                }
+                            });
                         }
                     });
                 }
@@ -127,7 +148,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    private boolean initDialogflow() {
+    private void initDialogflow() {
         try {
             InputStream inputStream = getResources().openRawResource(R.raw.dialogflow_credentials);
             GoogleCredentials googleCredentials = GoogleCredentials.fromStream(inputStream);
@@ -138,11 +159,13 @@ public class MainActivity extends Activity {
             sessionsClient = SessionsClient.create(sessionsSettings);
             session = SessionName.of(((ServiceAccountCredentials) googleCredentials).getProjectId(),
                     UUID.randomUUID().toString());
-            return true;
         }catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(MainActivity.this,
+                    getString(R.string.dialogflow_init_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
         }
-        return false;
     }
 
     private void resetSpeechRecognizer() {
@@ -159,12 +182,15 @@ public class MainActivity extends Activity {
                     txvResult.setText(result);
                     queryInput = QueryInput.newBuilder().setText(TextInput.newBuilder().setText(result)
                             .setLanguageCode(languageCode)).build();
-                    new DialogflowRequestTask(session, sessionsClient, queryInput, new DialogflowRequestTask.ResponseInterface() {
+                    new DialogflowRequestTask(session, sessionsClient, queryInput,
+                            new DialogflowRequestTask.ResponseInterface() {
                         @Override
                         public void onResponse(DetectIntentResponse response) {
                             String fulfillmentText = response.getQueryResult().getFulfillmentText();
-                            Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
-                            textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_FLUSH, null);
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID()
+                                    .toString());
+                            textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_ADD, map);
                         }
                     }).execute();
                 } else {
