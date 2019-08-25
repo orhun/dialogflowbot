@@ -81,8 +81,10 @@ public class MainActivity extends Activity {
         try {
             resetSpeechRecognizer();
             recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode);
-            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode);
+            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
+                    String.format("%s-%s", languageCode, languageCode.toUpperCase()));
+            recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
+                    String.format("%s-%s", languageCode, languageCode.toUpperCase()));
             recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                     RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
@@ -142,6 +144,7 @@ public class MainActivity extends Activity {
                                 public void run() {
                                     txvResult.setText(s);
                                     resetSpeechRecognizer();
+                                    muteAudio(true);
                                     speechRecognizer.startListening(recognizerIntent);
                                 }
                             });
@@ -182,7 +185,7 @@ public class MainActivity extends Activity {
                 pgbRms, new SpeechRecognizerListener.RecognizerInterface() {
             @Override
             public void onResult(String result) {
-                if (result != null) {
+                if (result != null && result.length() > 1) {
                     txvResult.setText(result);
                     queryInput = QueryInput.newBuilder().setText(TextInput.newBuilder().setText(result)
                             .setLanguageCode(languageCode)).build();
