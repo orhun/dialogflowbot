@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +60,7 @@ public class MainActivity extends Activity {
                 }
             }
         }).execute();
+        initTTS();
         initSpeechRecognizer();
         speechRecognizer.startListening(recognizerIntent);
     }
@@ -83,6 +85,46 @@ public class MainActivity extends Activity {
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+    }
+
+    public void initTTS(){
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    int setLanguage= textToSpeech.setLanguage(new Locale(languageCode,
+                            languageCode.toUpperCase()));
+                    // TODO: Update voice parameters.
+                    if (setLanguage == TextToSpeech.LANG_MISSING_DATA ||
+                            setLanguage == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.texttospeech_init_error),
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                    textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                        @Override
+                        public void onStart(String s) {
+                            if(speechRecognizer != null)
+                                speechRecognizer.stopListening();
+                        }
+
+                        @Override
+                        public void onDone(String s) {
+                            if (speechRecognizer != null)
+                                speechRecognizer.startListening(recognizerIntent);
+                        }
+
+                        @Override
+                        public void onError(String s) {
+                            txvResult.setText(s);
+                            resetSpeechRecognizer();
+                            speechRecognizer.startListening(recognizerIntent);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private boolean initDialogflow() {
@@ -121,9 +163,8 @@ public class MainActivity extends Activity {
                         @Override
                         public void onResponse(DetectIntentResponse response) {
                             String fulfillmentText = response.getQueryResult().getFulfillmentText();
-                            //speakText(getApplicationContext(), languageCode, fulfillmentText);
                             Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
-                            speechRecognizer.startListening(recognizerIntent);
+                            textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_FLUSH, null);
                         }
                     }).execute();
                 } else {
@@ -141,26 +182,6 @@ public class MainActivity extends Activity {
                 speechRecognizer.startListening(recognizerIntent);
             }
         }));
-    }
-
-    public void speakText(final Context context, final String languageCode, final String text){
-        textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
-                    int setLanguage= textToSpeech.setLanguage(new Locale(languageCode,
-                            languageCode.toUpperCase()));
-                    // TODO: Update voice parameters.
-                    if (setLanguage == TextToSpeech.LANG_MISSING_DATA ||
-                            setLanguage == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        Toast.makeText(context, context.getString(R.string.texttospeech_init_error),
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-                    }
-                }
-            }
-        });
     }
 
     @Override
