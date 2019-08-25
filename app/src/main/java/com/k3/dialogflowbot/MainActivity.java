@@ -43,16 +43,11 @@ public class MainActivity extends Activity {
     private SpeechRecognizer speechRecognizer;
     private Intent recognizerIntent;
 
-    private void init() {
-        returnedText = findViewById(R.id.textView1);
-        pgbRms =  findViewById(R.id.pgbRms);
-        pgbRms.setIndeterminate(true);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initViews();
         if (!initDialogflow()) {
             Toast.makeText(this, getString(R.string.dialogflow_init_error),
                     Toast.LENGTH_SHORT).show();
@@ -69,7 +64,6 @@ public class MainActivity extends Activity {
                 Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
             }
         }).execute();*/
-        init();
         resetSpeechRecognizer();
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,  languageCode);
@@ -78,6 +72,30 @@ public class MainActivity extends Activity {
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
         speechRecognizer.startListening(recognizerIntent);
+    }
+
+    private void initViews() {
+        returnedText = findViewById(R.id.textView1);
+        pgbRms =  findViewById(R.id.pgbRms);
+        pgbRms.setIndeterminate(true);
+    }
+
+    private boolean initDialogflow() {
+        try {
+            InputStream inputStream = getResources().openRawResource(R.raw.dialogflow_credentials);
+            GoogleCredentials googleCredentials = GoogleCredentials.fromStream(inputStream);
+            SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
+            SessionsSettings sessionsSettings = settingsBuilder.
+                    setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials)).
+                    build();
+            sessionsClient = SessionsClient.create(sessionsSettings);
+            session = SessionName.of(((ServiceAccountCredentials) googleCredentials).getProjectId(),
+                    UUID.randomUUID().toString());
+            return true;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void resetSpeechRecognizer() {
@@ -120,24 +138,6 @@ public class MainActivity extends Activity {
         if (speechRecognizer != null) {
             speechRecognizer.destroy();
         }
-    }
-
-    private boolean initDialogflow() {
-        try {
-            InputStream inputStream = getResources().openRawResource(R.raw.dialogflow_credentials);
-            GoogleCredentials googleCredentials = GoogleCredentials.fromStream(inputStream);
-            SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
-            SessionsSettings sessionsSettings = settingsBuilder.
-                    setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials)).
-                    build();
-            sessionsClient = SessionsClient.create(sessionsSettings);
-            session = SessionName.of(((ServiceAccountCredentials) googleCredentials).getProjectId(),
-                    UUID.randomUUID().toString());
-            return true;
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     private static class RequestTask extends AsyncTask<Void, Void, DetectIntentResponse> {
