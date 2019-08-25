@@ -77,6 +77,11 @@ public class MainActivity extends Activity {
         pgbRms =  findViewById(R.id.pgbRms);
         pgbRms.setIndeterminate(true);
         languageCode = getString(R.string.language_code);
+        try {
+            getActionBar().hide();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
 
     private void initSpeechRecognizer() {
