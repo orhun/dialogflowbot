@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
     private SessionsClient sessionsClient;
     private SessionName session;
     private QueryInput queryInput;
-    private String languageCode = "tr";
+    private String languageCode;
 
     private TextView returnedText;
     private ProgressBar pgbRms;
@@ -77,6 +77,7 @@ public class MainActivity extends Activity {
         returnedText = findViewById(R.id.textView1);
         pgbRms =  findViewById(R.id.pgbRms);
         pgbRms.setIndeterminate(true);
+        languageCode = getString(R.string.language_code);
     }
 
     private void initSpeechRecognizer() {
