@@ -26,15 +26,14 @@ import java.util.UUID;
 public class MainActivity extends Activity {
 
     private TextToSpeech textToSpeech;
+    private SpeechRecognizer speechRecognizer;
+    private Intent recognizerIntent;
     private SessionsClient sessionsClient;
     private SessionName session;
     private QueryInput queryInput;
     private String languageCode;
-
-    private TextView returnedText;
+    private TextView txvResult;
     private ProgressBar pgbRms;
-    private SpeechRecognizer speechRecognizer;
-    private Intent recognizerIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +73,7 @@ public class MainActivity extends Activity {
     }
 
     private void initViews() {
-        returnedText = findViewById(R.id.textView1);
+        txvResult = findViewById(R.id.txvResult);
         pgbRms =  findViewById(R.id.pgbRms);
         pgbRms.setIndeterminate(true);
         languageCode = getString(R.string.language_code);
@@ -118,13 +117,13 @@ public class MainActivity extends Activity {
                 recognizerIntent, pgbRms, new SpeechRecognizerListener.RecognizerInterface() {
             @Override
             public void onResult(String result) {
-                returnedText.setText(result);
+                txvResult.setText(result);
             }
             @Override
             public void onError(int errorCode) {
-                returnedText.setText(getString(R.string.error_code, errorCode));
+                txvResult.setText(getString(R.string.error_code, errorCode));
                 resetSpeechRecognizer();
-                //speechRecognizer.startListening(recognizerIntent);
+                speechRecognizer.startListening(recognizerIntent);
             }
         }));
     }
