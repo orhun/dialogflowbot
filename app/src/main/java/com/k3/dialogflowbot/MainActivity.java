@@ -3,7 +3,6 @@ package com.k3.dialogflowbot;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -15,8 +14,6 @@ import android.widget.Toast;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.dialogflow.v2beta1.DetectIntentRequest;
-import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse;
 import com.google.cloud.dialogflow.v2beta1.QueryInput;
 import com.google.cloud.dialogflow.v2beta1.SessionName;
 import com.google.cloud.dialogflow.v2beta1.SessionsClient;
@@ -33,10 +30,6 @@ public class MainActivity extends Activity {
     private SessionName session;
     private QueryInput queryInput;
     private String languageCode = "tr";
-    private interface ResponseInterface {
-        void onResponse(DetectIntentResponse response);
-    }
-
 
     private TextView returnedText;
     private ProgressBar pgbRms;
@@ -123,38 +116,6 @@ public class MainActivity extends Activity {
         }));
     }
 
-
-    private static class RequestTask extends AsyncTask<Void, Void, DetectIntentResponse> {
-        private SessionName session;
-        private SessionsClient sessionsClient;
-        private QueryInput queryInput;
-        private ResponseInterface responseInterface;
-        private RequestTask(SessionName session, SessionsClient sessionsClient,
-                            QueryInput queryInput, ResponseInterface responseInterface) {
-            this.session = session;
-            this.sessionsClient = sessionsClient;
-            this.queryInput = queryInput;
-            this.responseInterface = responseInterface;
-        }
-        @Override
-        protected DetectIntentResponse doInBackground(Void... voids) {
-            try {
-                DetectIntentRequest detectIntentRequest =
-                        DetectIntentRequest.newBuilder()
-                                .setSession(session.toString())
-                                .setQueryInput(queryInput)
-                                .build();
-                return sessionsClient.detectIntent(detectIntentRequest);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(DetectIntentResponse response) {
-            responseInterface.onResponse(response);
-        }
-    }
 
     public void speakText(final Context context, final String languageCode, final String text){
         textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
