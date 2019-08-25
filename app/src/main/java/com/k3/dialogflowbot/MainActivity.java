@@ -126,7 +126,11 @@ public class MainActivity extends Activity {
             }
             @Override
             public void onError(int errorCode) {
-                txvResult.setText(getString(R.string.error_code, errorCode));
+                if (SpeechRecognizerListener.getErrorMessage(errorCode) != null) {
+                    txvResult.setText(SpeechRecognizerListener.getErrorMessage(errorCode));
+                } else {
+                    txvResult.setText(getString(R.string.error_code, errorCode));
+                }
                 resetSpeechRecognizer();
                 speechRecognizer.startListening(recognizerIntent);
             }

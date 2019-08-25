@@ -71,4 +71,28 @@ public class SpeechRecognizerListener implements android.speech.RecognitionListe
     public void onError(int i) {
         recognizerInterface.onError(i);
     }
+    
+    public static String getErrorMessage(int errorCode) {
+        switch (errorCode) {
+            case SpeechRecognizer.ERROR_AUDIO:
+                return "Audio recording error";
+            case SpeechRecognizer.ERROR_CLIENT:
+                return "Client error";
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                return "Insufficient permissions";
+            case SpeechRecognizer.ERROR_NETWORK:
+                return "Network error";
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                return "Network timeout";
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                return "No match";
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                return "Recognition service is busy";
+            case SpeechRecognizer.ERROR_SERVER:
+                return "Server error";
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                return "No speech input";
+        }
+        return null;
+    }
 }
