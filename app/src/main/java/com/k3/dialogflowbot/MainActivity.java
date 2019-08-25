@@ -64,13 +64,7 @@ public class MainActivity extends Activity {
                 Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
             }
         }).execute();*/
-        resetSpeechRecognizer();
-        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,  languageCode);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+        initSpeechRecognizer();
         speechRecognizer.startListening(recognizerIntent);
     }
 
@@ -78,6 +72,16 @@ public class MainActivity extends Activity {
         returnedText = findViewById(R.id.textView1);
         pgbRms =  findViewById(R.id.pgbRms);
         pgbRms.setIndeterminate(true);
+    }
+
+    private void initSpeechRecognizer() {
+        resetSpeechRecognizer();
+        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,  languageCode);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
     }
 
     private boolean initDialogflow() {
@@ -119,26 +123,6 @@ public class MainActivity extends Activity {
         }));
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        resetSpeechRecognizer();
-        speechRecognizer.startListening(recognizerIntent);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        speechRecognizer.stopListening();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
-    }
 
     private static class RequestTask extends AsyncTask<Void, Void, DetectIntentResponse> {
         private SessionName session;
@@ -190,5 +174,26 @@ public class MainActivity extends Activity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resetSpeechRecognizer();
+        speechRecognizer.startListening(recognizerIntent);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        speechRecognizer.stopListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (speechRecognizer != null) {
+            speechRecognizer.destroy();
+        }
     }
 }
