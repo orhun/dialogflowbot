@@ -12,12 +12,12 @@ public class DialogflowRequestTask extends AsyncTask<Void, Void, DetectIntentRes
     private SessionName session;
     private SessionsClient sessionsClient;
     private QueryInput queryInput;
-    private interface ResponseInterface {
+    public interface ResponseInterface {
         void onResponse(DetectIntentResponse response);
     }
 
     private ResponseInterface responseInterface;
-    private DialogflowRequestTask(SessionName session, SessionsClient sessionsClient,
+    DialogflowRequestTask(SessionName session, SessionsClient sessionsClient,
                         QueryInput queryInput, ResponseInterface responseInterface) {
         this.session = session;
         this.sessionsClient = sessionsClient;

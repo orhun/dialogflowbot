@@ -14,10 +14,12 @@ import android.widget.Toast;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse;
 import com.google.cloud.dialogflow.v2beta1.QueryInput;
 import com.google.cloud.dialogflow.v2beta1.SessionName;
 import com.google.cloud.dialogflow.v2beta1.SessionsClient;
 import com.google.cloud.dialogflow.v2beta1.SessionsSettings;
+import com.google.cloud.dialogflow.v2beta1.TextInput;
 
 import java.io.InputStream;
 import java.util.Locale;
@@ -59,17 +61,6 @@ public class MainActivity extends Activity {
         }).execute();
         initSpeechRecognizer();
         speechRecognizer.startListening(recognizerIntent);
-        /*String testQuery = "test";
-        queryInput = QueryInput.newBuilder().setText(TextInput.newBuilder().setText(testQuery)
-                .setLanguageCode(languageCode)).build();
-        new RequestTask(session, sessionsClient, queryInput, new ResponseInterface() {
-            @Override
-            public void onResponse(DetectIntentResponse response) {
-                String fulfillmentText = response.getQueryResult().getFulfillmentText();
-                speakText(getApplicationContext(), languageCode, fulfillmentText);
-                Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
-            }
-        }).execute();*/
     }
 
     private void initViews() {
@@ -119,10 +110,25 @@ public class MainActivity extends Activity {
         if(!SpeechRecognizer.isRecognitionAvailable(this))
             finish();
         speechRecognizer.setRecognitionListener(new SpeechRecognizerListener(speechRecognizer,
-                recognizerIntent, pgbRms, new SpeechRecognizerListener.RecognizerInterface() {
+                pgbRms, new SpeechRecognizerListener.RecognizerInterface() {
             @Override
             public void onResult(String result) {
-                txvResult.setText(result);
+                if (result != null) {
+                    txvResult.setText(result);
+                    queryInput = QueryInput.newBuilder().setText(TextInput.newBuilder().setText(result)
+                            .setLanguageCode(languageCode)).build();
+                    new DialogflowRequestTask(session, sessionsClient, queryInput, new DialogflowRequestTask.ResponseInterface() {
+                        @Override
+                        public void onResponse(DetectIntentResponse response) {
+                            String fulfillmentText = response.getQueryResult().getFulfillmentText();
+                            //speakText(getApplicationContext(), languageCode, fulfillmentText);
+                            Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
+                            speechRecognizer.startListening(recognizerIntent);
+                        }
+                    }).execute();
+                } else {
+                    speechRecognizer.startListening(recognizerIntent);
+                }
             }
             @Override
             public void onError(int errorCode) {

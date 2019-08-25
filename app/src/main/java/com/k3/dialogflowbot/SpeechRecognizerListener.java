@@ -8,19 +8,16 @@ import android.widget.ProgressBar;
 public class SpeechRecognizerListener implements android.speech.RecognitionListener {
 
     private SpeechRecognizer speechRecognizer;
-    private Intent recognizerIntent;
     private ProgressBar progressBarRms;
-    interface RecognizerInterface {
+    public interface RecognizerInterface {
         void onResult(String result);
         void onError(int errorCode);
     }
     private RecognizerInterface recognizerInterface;
     SpeechRecognizerListener(SpeechRecognizer speechRecognizer,
-                                     Intent recognizerIntent,
                                      ProgressBar progressBarRms,
                                      RecognizerInterface recognizerInterface) {
         this.speechRecognizer = speechRecognizer;
-        this.recognizerIntent = recognizerIntent;
         this.progressBarRms = progressBarRms;
         this.recognizerInterface = recognizerInterface;
 
@@ -54,8 +51,8 @@ public class SpeechRecognizerListener implements android.speech.RecognitionListe
                     .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0));
         }catch (NullPointerException e){
             e.printStackTrace();
+            recognizerInterface.onResult(null);
         }
-        speechRecognizer.startListening(recognizerIntent);
     }
 
     @Override
