@@ -1,6 +1,5 @@
 package com.k3.dialogflowbot;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.speech.SpeechRecognizer;
 import android.widget.ProgressBar;
@@ -44,6 +43,7 @@ public class SpeechRecognizerListener implements android.speech.RecognitionListe
 
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onResults(Bundle bundle) {
         try {

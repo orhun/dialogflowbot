@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
         speechRecognizer.startListening(recognizerIntent);
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void initViews() {
         txvResult = findViewById(R.id.txvResult);
         pgbRms =  findViewById(R.id.pgbRms);
@@ -175,6 +176,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void resetSpeechRecognizer() {
         if(speechRecognizer != null)
             speechRecognizer.destroy();
@@ -195,10 +197,10 @@ public class MainActivity extends Activity {
                         public void onResponse(DetectIntentResponse response) {
                             String fulfillmentText = response.getQueryResult().getFulfillmentText();
                             muteAudio(false);
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID()
+                            HashMap<String, String> speechParams = new HashMap<>();
+                            speechParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID()
                                     .toString());
-                            textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_ADD, map);
+                            textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_ADD, speechParams);
                         }
                     }).execute();
                 } else {
@@ -218,6 +220,7 @@ public class MainActivity extends Activity {
         }));
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void muteAudio(boolean state) {
         try {
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
