@@ -41,11 +41,25 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
-        if (!initDialogflow()) {
-            Toast.makeText(this, getString(R.string.dialogflow_init_error),
-                    Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        new ConnectionCheckerTask(getString(R.string.connection_address),
+                new ConnectionCheckerTask.ConnectionCheckerInterface() {
+            @Override
+            public void onCheck(boolean connected) {
+                if (!connected) {
+                    Toast.makeText(MainActivity.this,
+                            getString(R.string.connection_error),
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                } else if (!initDialogflow()) {
+                        Toast.makeText(MainActivity.this,
+                                getString(R.string.dialogflow_init_error),
+                                Toast.LENGTH_SHORT).show();
+                        finish();
+                }
+            }
+        }).execute();
+        initSpeechRecognizer();
+        speechRecognizer.startListening(recognizerIntent);
         /*String testQuery = "test";
         queryInput = QueryInput.newBuilder().setText(TextInput.newBuilder().setText(testQuery)
                 .setLanguageCode(languageCode)).build();
@@ -57,8 +71,6 @@ public class MainActivity extends Activity {
                 Toast.makeText(getApplicationContext(), fulfillmentText, Toast.LENGTH_LONG).show();
             }
         }).execute();*/
-        initSpeechRecognizer();
-        speechRecognizer.startListening(recognizerIntent);
     }
 
     private void initViews() {
@@ -111,11 +123,10 @@ public class MainActivity extends Activity {
             public void onError(int errorCode) {
                 returnedText.setText(getString(R.string.error_code, errorCode));
                 resetSpeechRecognizer();
-                speechRecognizer.startListening(recognizerIntent);
+                //speechRecognizer.startListening(recognizerIntent);
             }
         }));
     }
-
 
     public void speakText(final Context context, final String languageCode, final String text){
         textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
@@ -140,21 +151,23 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        resetSpeechRecognizer();
-        speechRecognizer.startListening(recognizerIntent);
+        if(speechRecognizer != null) {
+            resetSpeechRecognizer();
+            speechRecognizer.startListening(recognizerIntent);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        speechRecognizer.stopListening();
+        if(speechRecognizer != null)
+            speechRecognizer.stopListening();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (speechRecognizer != null) {
+        if (speechRecognizer != null)
             speechRecognizer.destroy();
-        }
     }
 }
