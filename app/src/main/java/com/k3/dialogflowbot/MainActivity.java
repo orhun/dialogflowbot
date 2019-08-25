@@ -1,7 +1,9 @@
 package com.k3.dialogflowbot;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
@@ -59,6 +61,7 @@ public class MainActivity extends Activity {
         initSpeechRecognizer();
         initTTS();
         initDialogflow();
+        muteAudio(true);
         speechRecognizer.startListening(recognizerIntent);
     }
 
@@ -92,7 +95,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void initTTS(){
+    public void initTTS() {
         textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -119,6 +122,7 @@ public class MainActivity extends Activity {
                                     new Handler().postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
+                                            muteAudio(true);
                                             if (speechRecognizer != null) {
                                                 speechRecognizer.startListening(recognizerIntent);
                                             } else {
@@ -187,6 +191,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void onResponse(DetectIntentResponse response) {
                             String fulfillmentText = response.getQueryResult().getFulfillmentText();
+                            muteAudio(false);
                             HashMap<String, String> map = new HashMap<>();
                             map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID()
                                     .toString());
@@ -208,6 +213,19 @@ public class MainActivity extends Activity {
                 speechRecognizer.startListening(recognizerIntent);
             }
         }));
+    }
+
+    private void muteAudio(boolean state) {
+        try {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setStreamMute(AudioManager.STREAM_NOTIFICATION, state);
+            audioManager.setStreamMute(AudioManager.STREAM_ALARM, state);
+            audioManager.setStreamMute(AudioManager.STREAM_MUSIC, state);
+            audioManager.setStreamMute(AudioManager.STREAM_RING, state);
+            audioManager.setStreamMute(AudioManager.STREAM_SYSTEM, state);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
 
     @Override
