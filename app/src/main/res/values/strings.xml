@@ -2,4 +2,5 @@
     <string name="app_name">Dialogflowbot</string>
     <string name="dialogflow_init_error">Failed to initialize Dialogflow.</string>
     <string name="texttospeech_init_error">Failed to initialize TextToSpeech.</string>
+    <string name="error_code">Error code: %1$d</string>
 </resources>
