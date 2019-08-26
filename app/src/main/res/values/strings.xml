@@ -4,6 +4,7 @@
     <string name="dialogflow_init_error">Failed to initialize Dialogflow.</string>
     <string name="texttospeech_init_error">Failed to initialize TextToSpeech.</string>
     <string name="speechrecognition_init_error">Failed to initialize SpeechRecognition.</string>
+    <string name="permission_error">Insufficient permissions.</string>
     <string name="error_code">Error code: %1$d</string>
     <string name="connection_address">google.com</string>
     <string name="connection_error">Connection error.</string>

@@ -1,8 +1,10 @@
 package com.k3.dialogflowbot;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +12,9 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,11 +63,37 @@ public class MainActivity extends Activity {
                 }
             }
         }).execute();
-        initSpeechRecognizer();
-        initTTS();
-        initDialogflow();
-        muteAudio(true);
-        speechRecognizer.startListening(recognizerIntent);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        } else {
+            initSpeechRecognizer();
+            initTTS();
+            initDialogflow();
+            muteAudio(true);
+            speechRecognizer.startListening(recognizerIntent);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull  int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initSpeechRecognizer();
+                initTTS();
+                initDialogflow();
+                muteAudio(true);
+                speechRecognizer.startListening(recognizerIntent);
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.permission_error), Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
