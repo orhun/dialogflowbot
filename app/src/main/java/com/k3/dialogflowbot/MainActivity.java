@@ -196,11 +196,13 @@ public class MainActivity extends Activity {
                         @Override
                         public void onResponse(DetectIntentResponse response) {
                             String fulfillmentText = response.getQueryResult().getFulfillmentText();
-                            muteAudio(false);
-                            HashMap<String, String> speechParams = new HashMap<>();
-                            speechParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID()
-                                    .toString());
-                            textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_ADD, speechParams);
+                            if (fulfillmentText.length() > 1) {
+                                muteAudio(false);
+                                HashMap<String, String> speechParams = new HashMap<>();
+                                speechParams.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID()
+                                        .toString());
+                                textToSpeech.speak(fulfillmentText, TextToSpeech.QUEUE_ADD, speechParams);
+                            }
                         }
                     }).execute();
                 } else {
