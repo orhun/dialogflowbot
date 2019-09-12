@@ -1,6 +1,6 @@
-# dialogflowbot [![Release](https://img.shields.io/github/release/keylo99/dialogflowbot.svg?style=flat-square)](https://github.com/keylo99/dialogflowbot/releases)
+# dialogflowbot [![Release](https://img.shields.io/github/release/orhun/dialogflowbot.svg?style=flat-square)](https://github.com/orhun/dialogflowbot/releases)
 
-[![License](https://img.shields.io/github/license/keylo99/dialogflowbot.svg?color=blue&style=flat-square)](./LICENSE)
+[![License](https://img.shields.io/github/license/orhun/dialogflowbot.svg?color=blue&style=flat-square)](./LICENSE)
 
 ## Google's Dialogflow implementation with Speech Recognition and Text-to-Speech.
 
@@ -35,4 +35,4 @@ GNU General Public License v3. (see [gpl](https://www.gnu.org/licenses/gpl.txt))
 
 ## Credit
 
-Copyright (C) 2019 by [keylo99](https://www.github.com/keylo99)
+Copyright (C) 2019 by [orhun](https://www.github.com/orhun)
