@@ -25,7 +25,7 @@ It's an Android application that aims to continuously listen to environment for 
 
 ![Create Private Key](https://user-images.githubusercontent.com/24392180/63890583-fbc4ff80-c9eb-11e9-9c9e-e61f4014b647.png)
 
-* Save JSON key file to `/app/src/main/res/raw/dialogflow_creadentials.json`
+* Save JSON key file to `/app/src/main/res/raw/dialogflow_credentials.json`
 
 * Build!
 
